@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { initializeAuth, getReactNativePersistence, getAuth, browserLocalPersistence, setPersistence } from "firebase/auth";
+import { initializeAuth, getReactNativePersistence, getAuth, browserLocalPersistence, setPersistence, browserSessionPersistence, inMemoryPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { Platform } from "react-native";
 
@@ -25,11 +25,17 @@ let auth;
 
 if (Platform.OS === 'web') {
   auth = getAuth(app);
-  setPersistence(auth, browserLocalPersistence);
+  setPersistence(auth, browserSessionPersistence);
 } else {
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage)
-  });
+  try {
+    // Essaie de récupérer l'instance existante (pour éviter le crash au rechargement)
+    auth = getAuth(app);
+  } catch (e) {
+    // Si elle n'existe pas, on l'initialise avec la persistance en mémoire (déconnexion à la fermeture)
+    auth = initializeAuth(app, {
+      persistence: inMemoryPersistence
+    });
+  }
 }
 
 export { auth };

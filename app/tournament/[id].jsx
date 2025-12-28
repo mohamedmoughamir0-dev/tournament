@@ -8,9 +8,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { db } from '../../firebase';
 
+// ℹ️ TournamentDetailsScreen : Affiche les détails d'un tournoi spécifique.
+// C'est une route dynamique : [id] sera remplacé par l'ID du tournoi.
+
 export default function TournamentDetailsScreen() {
-    const { id } = useLocalSearchParams();
-    const [tournament, setTournament] = useState<any>(null);
+    const { id } = useLocalSearchParams(); // 🎣 Récupère l'ID depuis l'URL
+    const [tournament, setTournament] = useState(null);
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
 
@@ -18,7 +21,7 @@ export default function TournamentDetailsScreen() {
         const fetchTournament = async () => {
             if (!id) return;
             try {
-                const docRef = doc(db, "tournois", id as string);
+                const docRef = doc(db, "tournois", id);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
@@ -37,6 +40,7 @@ export default function TournamentDetailsScreen() {
         fetchTournament();
     }, [id]);
 
+    // ➕ Gestion de l'inscription au tournoi
     const handleJoin = async () => {
         const auth = getAuth();
         const user = auth.currentUser;
@@ -48,7 +52,7 @@ export default function TournamentDetailsScreen() {
 
         setJoining(true);
         try {
-            const tournamentRef = doc(db, "tournois", id as string);
+            const tournamentRef = doc(db, "tournois", id);
 
             // Add user ID to participants array
             await updateDoc(tournamentRef, {
