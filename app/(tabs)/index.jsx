@@ -137,16 +137,29 @@ export default function App() {
     };
 
 
-    const [, response, promptAsync] = Google.useAuthRequest({
+    const [request, response, promptAsync] = Google.useAuthRequest({
         webClientId: "230059253546-677cjd0afijc3dfvitmdtne2lh8lnb06.apps.googleusercontent.com",
         androidClientId: "230059253546-677cjd0afijc3dfvitmdtne2lh8lnb06.apps.googleusercontent.com",
         iosClientId: "230059253546-677cjd0afijc3dfvitmdtne2lh8lnb06.apps.googleusercontent.com",
     });
 
+
+
     useEffect(() => {
         if (response?.type === "success") {
+
+
             const { id_token } = response.params;
-            const credential = GoogleAuthProvider.credential(id_token);
+            const { accessToken } = response.authentication || {};
+
+            if (!id_token && !accessToken) {
+                console.error("❌ Pas de token trouvé dans la réponse Google.");
+                return;
+            }
+
+            // On utilise id_token si dispo, sinon accessToken
+            const credential = GoogleAuthProvider.credential(id_token, accessToken);
+
             signInWithCredential(auth, credential)
                 .then((userCredential) => {
                     saveUserData(userCredential.user);
